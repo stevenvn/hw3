@@ -31,4 +31,15 @@ function ListOfStaff() {
         this.staffs.splice(index, 1);
       }
     });
+  this.searchingStaff = function (name) {
+    var results = [];
+    for (var i = 0; i < this.staffs.length; i++) {
+      if (
+        this.staffs[i].name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      ) {
+        results.push(this.staffs[i]);
+      }
+    }
+    return results;
+  };
 }

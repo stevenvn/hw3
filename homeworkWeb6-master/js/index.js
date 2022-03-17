@@ -1,4 +1,5 @@
 var listOfStaff = new ListOfStaff();
+var validation = new Validation();
 getLocalStorage();
 function getEle(id) {
   return document.getElementById(id);
@@ -14,32 +15,53 @@ function getUserInputData() {
   var position = getEle("chucvu").value;
   var hours = getEle("gioLam").value;
 
-  var staff = new Staff(
+  var accountInputIsValid = false;
+  var emailInputIsValid = false;
+  accountInputIsValid = validation.checkEmpty(
     account,
-    name,
-    email,
-    password,
-    date,
-    wage,
-    position,
-    hours
+    "tbTKNV",
+    "account must have value"
   );
-  staff.toCalculatePay();
-  staff.toEvaluateRank();
-  return staff;
+  emailInputIsValid = validation.checkEmailFormat(
+    email,
+    "tbEmail",
+    "email must include @"
+  );
+  // var isValid = false;
+  // if (isValid == false) {
+  //   isValid = validation.checkEmpty(
+  //     account,
+  //     "tbTKNV",
+  //     "account have to have value"
+  //   );
+  // }
+  var isValid = accountInputIsValid && emailInputIsValid;
+  if (isValid) {
+    var staff = new Staff(
+      account,
+      name,
+      email,
+      password,
+      date,
+      wage,
+      position,
+      hours
+    );
+    staff.toCalculatePay();
+    staff.toEvaluateRank();
+    return staff;
+  }
+  return null;
 }
 function setLocalStorage() {
   //JSON stringify convert JavaScrit object or value to a JSON string
   var arrString = JSON.stringify(listOfStaff.staffs);
-  console.log("array", arrString);
 
   localStorage.setItem("staffs", arrString);
-  console.log("array", arrString);
 }
 
 function createTable(arr) {
   getEle("tableDanhSach").innerHTML = "";
-  console.log("arr", arr);
   for (var i = 0; i < arr.length; i++) {
     //create html tr
     var tagTr = document.createElement("tr");
@@ -54,7 +76,6 @@ function createTable(arr) {
     var btnUpdateTdTag = document.createElement("td");
     var btnDeleteTdTag = document.createElement("td");
     //assign value to td tags
-    console.log("arr data", i);
     accountTdTag.innerHTML = arr[i].account;
     nameTdTag.innerHTML = arr[i].name;
     emailTdTag.innerHTML = arr[i].email;
@@ -85,6 +106,16 @@ function createTable(arr) {
     getEle("tableDanhSach").appendChild(tagTr);
   }
 }
+function resetForm() {
+  getEle("tknv").value = "";
+  getEle("name").value = "";
+  getEle("email").value = "";
+  getEle("password").value = "";
+  getEle("datepicker").value = "";
+  getEle("luongCB").value = "";
+  getEle("chucvu").value = "";
+  getEle("gioLam").value = "";
+}
 function getLocalStorage() {
   if (localStorage.getItem("staffs")) {
     var data = localStorage.getItem("staffs");
@@ -94,21 +125,19 @@ function getLocalStorage() {
   }
 }
 getEle("btnThem").addEventListener("click", function () {
-  getEle("tknv").value = "";
-  getEle("name").value = "";
-  getEle("email").value = "";
-  getEle("password").value = "";
-  getEle("datepicker").value = "";
-  getEle("luongCB").value = "";
-  getEle("chucvu").value = "";
-  getEle("gioLam").value = "";
+  getEle("btnThemNV").removeAttribute("disabled");
+  getEle("btnCapNhat").setAttribute("disabled", "disabled");
+
+  resetForm();
 });
 getEle("btnThemNV").addEventListener("click", function () {
+  getEle("tknv").disabled = false;
   var staff = getUserInputData();
-  listOfStaff.addStaff(staff);
-  setLocalStorage();
-  createTable(listOfStaff.staffs);
-  console.log("abd");
+  if (staff) {
+    listOfStaff.addStaff(staff);
+    setLocalStorage();
+    createTable(listOfStaff.staffs);
+  }
 });
 function deleteStaff(account) {
   listOfStaff.deleteStaff(account);
@@ -116,6 +145,8 @@ function deleteStaff(account) {
   createTable(listOfStaff.staffs);
 }
 function updateStaff(account) {
+  getEle("btnCapNhat").removeAttribute("disabled");
+
   var index = listOfStaff.lookForIndexAccount(account);
   //get current staff's info
   var account = listOfStaff.staffs[index].account;
@@ -137,6 +168,8 @@ function updateStaff(account) {
   getEle("gioLam").value = hours;
   //disable account input
   getEle("tknv").setAttribute("disabled", "");
+  getEle("btnThemNV").setAttribute("disabled", "disabled");
+
   //update staff info
   getEle("btnCapNhat").addEventListener("click", function () {
     var updatedStaff = getUserInputData();
@@ -148,3 +181,9 @@ function updateStaff(account) {
     console.log("staffs", listOfStaff);
   });
 }
+
+getEle("btnTimNV").addEventListener("click", function () {
+  var searchingStaffs = listOfStaff.searchingStaff(getEle("searchName").value);
+  console.log("searching staffs", searchingStaffs);
+  createTable(searchingStaffs);
+});
